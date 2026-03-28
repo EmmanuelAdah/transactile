@@ -1,0 +1,306 @@
+"""
+Payment System GraphQL Schema
+Production-ready with comprehensive types, queries, mutations, and subscriptions
+"""
+
+# ─── Scalars ──────────────────────────────────────────────────────────────────
+scalar DateTime
+scalar BigDecimal
+scalar UUID
+scalar Currency
+
+# ─── Enums ────────────────────────────────────────────────────────────────────
+enum PaymentStatus {
+    PENDING
+    PROCESSING
+    COMPLETED
+    FAILED
+    CANCELLED
+    REFUNDED
+    PARTIALLY_REFUNDED
+    DISPUTED
+}
+
+enum PaymentMethod {
+    CREDIT_CARD
+    DEBIT_CARD
+    BANK_TRANSFER
+    DIGITAL_WALLET
+    CRYPTO
+    BUY_NOW_PAY_LATER
+}
+
+enum Currency {
+    USD
+    EUR
+    GBP
+    NGN
+    JPY
+    CAD
+    AUD
+}
+
+enum TransactionType {
+    PAYMENT
+    REFUND
+    CHARGEBACK
+    ADJUSTMENT
+    FEE
+}
+
+enum AccountStatus {
+    ACTIVE
+    SUSPENDED
+    CLOSED
+    UNDER_REVIEW
+}
+
+enum SortDirection {
+    ASC
+    DESC
+}
+
+# ─── Core Types ───────────────────────────────────────────────────────────────
+type Account {
+    id: UUID!
+    externalId: String!
+    email: String!
+    fullName: String!
+    status: AccountStatus!
+    currency: Currency!
+    balance: BigDecimal!
+    availableBalance: BigDecimal!
+    kycVerified: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    payments(page: Int = 0, size: Int = 20): PaymentPage!
+}
+
+type Payment {
+    id: UUID!
+    referenceId: String!
+    amount: BigDecimal!
+    currency: Currency!
+    status: PaymentStatus!
+    method: PaymentMethod!
+    description: String
+    metadata: String
+    idempotencyKey: String!
+    sender: Account!
+    recipient: Account!
+    transactions: [Transaction!]!
+    refunds: [Refund!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    completedAt: DateTime
+    failureReason: String
+    processingFee: BigDecimal!
+    netAmount: BigDecimal!
+    riskScore: Float
+}
+
+type Transaction {
+    id: UUID!
+    type: TransactionType!
+    amount: BigDecimal!
+    currency: Currency!
+    balanceBefore: BigDecimal!
+    balanceAfter: BigDecimal!
+    payment: Payment!
+    account: Account!
+    description: String
+    createdAt: DateTime!
+}
+
+type Refund {
+    id: UUID!
+    amount: BigDecimal!
+    currency: Currency!
+    reason: String!
+    status: PaymentStatus!
+    payment: Payment!
+    initiatedBy: Account!
+    createdAt: DateTime!
+    processedAt: DateTime
+}
+
+type PaymentMethod {
+    id: UUID!
+    type: PaymentMethod!
+    last4: String
+    brand: String
+    expiryMonth: Int
+    expiryYear: Int
+    isDefault: Boolean!
+    account: Account!
+    createdAt: DateTime!
+}
+
+# ─── Audit & Analytics ────────────────────────────────────────────────────────
+type AuditLog {
+    id: UUID!
+    action: String!
+    entityType: String!
+    entityId: UUID!
+    actorId: UUID!
+    changes: String
+    ipAddress: String
+    userAgent: String
+    createdAt: DateTime!
+}
+
+type PaymentStats {
+    totalVolume: BigDecimal!
+    totalCount: Int!
+    successRate: Float!
+    averageAmount: BigDecimal!
+    currency: Currency!
+    period: String!
+}
+
+# ─── Pagination ───────────────────────────────────────────────────────────────
+type PaymentPage {
+    content: [Payment!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    pageSize: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+type AccountPage {
+    content: [Account!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    pageSize: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+# ─── Response Wrappers ────────────────────────────────────────────────────────
+type PaymentResult {
+    success: Boolean!
+    payment: Payment
+    errors: [FieldError!]
+    message: String
+}
+
+type RefundResult {
+    success: Boolean!
+    refund: Refund
+    errors: [FieldError!]
+    message: String
+}
+
+type FieldError {
+    field: String!
+    message: String!
+    code: String
+}
+
+# ─── Input Types ──────────────────────────────────────────────────────────────
+input CreateAccountInput {
+    email: String!
+    fullName: String!
+    currency: Currency!
+    externalId: String!
+}
+
+input InitiatePaymentInput {
+    senderId: UUID!
+    recipientId: UUID!
+    amount: BigDecimal!
+    currency: Currency!
+    method: PaymentMethod!
+    description: String
+    metadata: String
+    idempotencyKey: String!
+}
+
+input RefundPaymentInput {
+    paymentId: UUID!
+    amount: BigDecimal!
+    reason: String!
+    idempotencyKey: String!
+}
+
+input AddPaymentMethodInput {
+    accountId: UUID!
+    type: PaymentMethod!
+    token: String!
+    isDefault: Boolean = false
+}
+
+input PaymentFilterInput {
+    status: PaymentStatus
+    method: PaymentMethod
+    currency: Currency
+    minAmount: BigDecimal
+    maxAmount: BigDecimal
+    fromDate: DateTime
+    toDate: DateTime
+    senderId: UUID
+    recipientId: UUID
+}
+
+input PaymentSortInput {
+    field: String! = "createdAt"
+    direction: SortDirection! = DESC
+}
+
+# ─── Queries ──────────────────────────────────────────────────────────────────
+type Query {
+    # Account queries
+    account(id: UUID!): Account
+    accountByEmail(email: String!): Account
+    accounts(page: Int = 0, size: Int = 20): AccountPage!
+
+    # Payment queries
+    payment(id: UUID!): Payment
+    paymentByReference(referenceId: String!): Payment
+    payments(
+        filter: PaymentFilterInput
+        sort: PaymentSortInput
+        page: Int = 0
+        size: Int = 20
+    ): PaymentPage!
+
+    # Transaction queries
+    transactions(accountId: UUID!, page: Int = 0, size: Int = 20): [Transaction!]!
+
+    # Analytics
+    paymentStats(accountId: UUID, currency: Currency!, period: String!): PaymentStats!
+
+    # Audit
+    auditLogs(entityId: UUID!, page: Int = 0, size: Int = 20): [AuditLog!]!
+
+    # Payment methods
+    paymentMethods(accountId: UUID!): [PaymentMethod!]!
+}
+
+# ─── Mutations ────────────────────────────────────────────────────────────────
+type Mutation {
+    # Account mutations
+    createAccount(input: CreateAccountInput!): Account!
+    suspendAccount(id: UUID!, reason: String!): Account!
+    reactivateAccount(id: UUID!): Account!
+
+    # Payment mutations
+    initiatePayment(input: InitiatePaymentInput!): PaymentResult!
+    confirmPayment(paymentId: UUID!): PaymentResult!
+    cancelPayment(paymentId: UUID!, reason: String!): PaymentResult!
+    refundPayment(input: RefundPaymentInput!): RefundResult!
+
+    # Payment method mutations
+    addPaymentMethod(input: AddPaymentMethodInput!): PaymentMethod!
+    removePaymentMethod(id: UUID!): Boolean!
+    setDefaultPaymentMethod(id: UUID!): PaymentMethod!
+}
+
+# ─── Subscriptions ────────────────────────────────────────────────────────────
+type Subscription {
+    paymentStatusUpdated(paymentId: UUID!): Payment!
+    accountBalanceUpdated(accountId: UUID!): Account!
+}

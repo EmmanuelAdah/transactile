@@ -1,5 +1,3 @@
-# Transactile ▷
-
 # 💳 Payment System — Spring Boot + GraphQL
 
 A **production-ready** payment processing system built with Spring Boot 3.2, Spring for GraphQL,
