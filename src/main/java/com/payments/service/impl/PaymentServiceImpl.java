@@ -380,7 +380,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // Internal exception for idempotency returns
-    static class IdempotencyReturnException extends RuntimeException {
+    public static class IdempotencyReturnException extends RuntimeException {
         private final Payment payment;
 
         IdempotencyReturnException(Payment payment) {

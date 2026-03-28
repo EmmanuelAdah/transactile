@@ -41,7 +41,7 @@ public class AccountServiceImpl implements AccountService {
                 .email(input.email())
                 .fullName(input.fullName())
                 .currency(input.currency())
-                .externalId(input.externalId())
+                .userId(input.externalId())
                 .status(AccountStatus.ACTIVE)
                 .build();
 
