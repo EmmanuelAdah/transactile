@@ -24,6 +24,7 @@
 /home/emmanuel-adah/Documents/payment-system/src/main/java/com/payments/config/SecurityConfig.java
 /home/emmanuel-adah/Documents/payment-system/src/main/java/com/payments/service/AccountService.java
 /home/emmanuel-adah/Documents/payment-system/src/main/java/com/payments/model/entity/AuditLog.java
+/home/emmanuel-adah/Documents/payment-system/src/main/java/com/payments/exception/ResourceNotFoundException.java
 /home/emmanuel-adah/Documents/payment-system/src/main/java/com/payments/model/dto/PaymentDTOs.java
 /home/emmanuel-adah/Documents/payment-system/src/main/java/com/payments/repository/RefundRepository.java
 /home/emmanuel-adah/Documents/payment-system/src/main/java/com/payments/exception/Exceptions.java

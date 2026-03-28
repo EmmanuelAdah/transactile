@@ -23,7 +23,7 @@ import java.util.UUID;
 
 /**
  * GraphQL Controller using Spring for GraphQL's annotation-based schema mapping.
- *
+
  * Annotations used:
  * - @QueryMapping     → maps to Query fields in schema
  * - @MutationMapping  → maps to Mutation fields in schema
@@ -154,7 +154,7 @@ public class PaymentGraphQLController {
             return PaymentResult.success(payment);
         } catch (IdempotencyReturnException e) {
             // Idempotent replay — return existing payment as success
-            return PaymentResult.success(e.getPayment());
+            return PaymentResult.success(e.getMessage());
         } catch (Exception e) {
             log.warn("Payment initiation failed: {}", e.getMessage());
             return PaymentResult.failure(e.getMessage());
@@ -197,7 +197,7 @@ public class PaymentGraphQLController {
     // ─── Nested Schema Mappings ───────────────────────────────────────────────
 
     /**
-     * @SchemaMapping resolves the `payments` field on the Account type.
+     * \@SchemaMapping resolves the `payments` field on the Account type.
      * typeName = "Account" matches the GraphQL type; field = "payments" matches the field name.
      */
     @SchemaMapping(typeName = "Account", field = "payments")

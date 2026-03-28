@@ -126,10 +126,11 @@ public class PaymentServiceImpl implements PaymentService {
             throw Exceptions.invalidState("Payment is not in PENDING state: " + payment.getStatus());
         }
 
+        Payment finalPayment = payment;
         Account sender = accountRepository.findByIdForUpdate(payment.getSender().getId())
-                .orElseThrow(() -> Exceptions.notFound("Account", payment.getSender().getId()));
+                .orElseThrow(() -> Exceptions.notFound("Account", finalPayment.getSender().getId()));
         Account recipient = accountRepository.findByIdForUpdate(payment.getRecipient().getId())
-                .orElseThrow(() -> Exceptions.notFound("Account", payment.getRecipient().getId()));
+                .orElseThrow(() -> Exceptions.notFound("Account", finalPayment.getRecipient().getId()));
 
         // Transition to PROCESSING then COMPLETED
         payment.transitionTo(PaymentStatus.PROCESSING);
@@ -169,8 +170,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw Exceptions.invalidState("Cannot cancel payment in state: " + payment.getStatus());
         }
 
+        Payment finalPayment = payment;
         Account sender = accountRepository.findByIdForUpdate(payment.getSender().getId())
-                .orElseThrow(() -> Exceptions.notFound("Account", payment.getSender().getId()));
+                .orElseThrow(() -> Exceptions.notFound("Account", finalPayment.getSender().getId()));
 
         // Release hold
         sender.releaseHold(payment.getAmount());
