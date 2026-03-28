@@ -36,7 +36,7 @@ public class Account {
     private UUID id;
 
     @Column(name = "external_id", nullable = false, unique = true, length = 100)
-    private String externalId;
+    private String userId;
 
     @Column(nullable = false, unique = true, length = 255)
     private String email;

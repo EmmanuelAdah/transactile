@@ -59,11 +59,11 @@ spring:
       allowed-methods: GET,POST
       allow-credentials: true
 
-  # Cache
+# Cache
   cache:
     type: caffeine
     caffeine:
-      spec=maximumSize=1000,expireAfterWrite=300s
+      spec: maximumSize=1000,expireAfterWrite=300s
 
 # Security / JWT
 app:
@@ -89,12 +89,15 @@ resilience4j:
         failureRateThreshold: 50
         waitDurationInOpenState: 30s
         permittedNumberOfCallsInHalfOpenState: 5
+
   retry:
     instances:
       paymentProcessor:
         maxAttempts: 3
         waitDuration: 1s
-        retryExceptions: java.net.ConnectException,java.util.concurrent.TimeoutException
+        retryExceptions:
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
 
 # Actuator
 management:
