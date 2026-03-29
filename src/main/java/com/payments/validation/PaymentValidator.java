@@ -33,7 +33,7 @@ public class PaymentValidator {
             throw Exceptions.invalidState("Sender and recipient cannot be the same account");
         }
 
-        // Currency must match sender's account currency (or be explicitly supported)
+        // Currency must match a sender's account currency (or be explicitly supported)
         if (!sender.getCurrency().equals(input.currency())) {
             throw Exceptions.currencyMismatch(
                     "Payment currency " + input.currency() +
