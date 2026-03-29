@@ -77,7 +77,7 @@ class PaymentServiceTest {
         @DisplayName("should initiate a valid payment successfully")
         void shouldInitiatePaymentSuccessfully() {
             // Arrange
-            var input = new InitiatePaymentInput(
+            var input = new InitiatePaymentDTO(
                     sender.getId(), recipient.getId(),
                     new BigDecimal("100.00"), CurrencyCode.USD,
                     PaymentMethod.CREDIT_CARD, "Test payment", null,
@@ -135,7 +135,7 @@ class PaymentServiceTest {
             when(paymentRepository.findByIdempotencyKey("idem-key-dup"))
                     .thenReturn(Optional.of(existing));
 
-            var input = new InitiatePaymentInput(
+            var input = new InitiatePaymentDTO(
                     sender.getId(), recipient.getId(),
                     new BigDecimal("50.00"), CurrencyCode.USD,
                     PaymentMethod.BANK_TRANSFER, null, null,
@@ -155,7 +155,7 @@ class PaymentServiceTest {
         @Test
         @DisplayName("should block payment when risk score is too high")
         void shouldBlockHighRiskPayment() {
-            var input = new InitiatePaymentInput(
+            var input = new InitiatePaymentDTO(
                     sender.getId(), recipient.getId(),
                     new BigDecimal("100.00"), CurrencyCode.USD,
                     PaymentMethod.CRYPTO, null, null, "idem-key-risk"
@@ -174,7 +174,7 @@ class PaymentServiceTest {
         @Test
         @DisplayName("should throw when sender account not found")
         void shouldThrowWhenSenderNotFound() {
-            var input = new InitiatePaymentInput(
+            var input = new InitiatePaymentDTO(
                     UUID.randomUUID(), recipient.getId(),
                     BigDecimal.TEN, CurrencyCode.USD,
                     PaymentMethod.CREDIT_CARD, null, null, "idem-key-nf"
@@ -306,7 +306,7 @@ class PaymentServiceTest {
 
             recipient.credit(new BigDecimal("150.00")); // recipient got paid
 
-            var input = new RefundPaymentInput(
+            var input = new RefundPaymentDTO(
                     payment.getId(), new BigDecimal("150.00"), "Defective product", "ref-idem-001"
             );
 
@@ -345,7 +345,7 @@ class PaymentServiceTest {
                     .recipient(recipient)
                     .build();
 
-            var input = new RefundPaymentInput(
+            var input = new RefundPaymentDTO(
                     payment.getId(), new BigDecimal("999.00"), "Over-refund", "ref-idem-002"
             );
 
@@ -359,7 +359,7 @@ class PaymentServiceTest {
         @Test
         @DisplayName("should return existing refund for duplicate idempotency key")
         void shouldReturnExistingRefundIdempotently() {
-            var input = new RefundPaymentInput(
+            var input = new RefundPaymentDTO(
                     UUID.randomUUID(), new BigDecimal("50.00"), "Duplicate", "ref-idem-dup"
             );
 

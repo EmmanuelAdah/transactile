@@ -60,20 +60,38 @@ enum SortDirection {
     DESC
 }
 
+enum AccountType {
+    SAVINGS
+    CURRENT
+}
+
 # ─── Core Types ───────────────────────────────────────────────────────────────
+type User {
+    id: UUID!
+    email: String!
+    accounts: [Account!]!
+}
+
 type Account {
     id: UUID!
-    externalId: String!
-    email: String!
-    fullName: String!
+    userId: UUID!
+
     status: AccountStatus!
+    accountNumber: String!
+    accountType: AccountType!
     currency: Currency!
+
     balance: BigDecimal!
     availableBalance: BigDecimal!
+
     kycVerified: Boolean!
+
     createdAt: DateTime!
     updatedAt: DateTime!
-    payments(page: Int = 0, size: Int = 20): PaymentPage!
+
+    # Relationships
+    sentPayments(page: Int = 0, size: Int = 20): PaymentPage!
+    receivedPayments(page: Int = 0, size: Int = 20): PaymentPage!
 }
 
 type Payment {
@@ -124,17 +142,18 @@ type Refund {
     processedAt: DateTime
 }
 
-type PaymentMethod {
-    id: UUID!
-    type: PaymentMethod!
-    last4: String
-    brand: String
-    expiryMonth: Int
-    expiryYear: Int
-    isDefault: Boolean!
-    account: Account!
-    createdAt: DateTime!
-}
+#type PaymentMethod {
+#    id: UUID!
+#    name: String!
+#    type: PaymentMethod!
+#    last4: String
+#    brand: String
+#    expiryMonth: Int
+#    expiryYear: Int
+#    isDefault: Boolean!
+#    account: Account!
+#    createdAt: DateTime!
+#}
 
 # ─── Audit & Analytics ────────────────────────────────────────────────────────
 type AuditLog {
@@ -254,7 +273,7 @@ input PaymentSortInput {
 type Query {
     # Account queries
     account(id: UUID!): Account
-    accountByEmail(email: String!): Account
+    accountByAccountNumber(accountNumber: ID!): Account
     accounts(page: Int = 0, size: Int = 20): AccountPage!
 
     # Payment queries

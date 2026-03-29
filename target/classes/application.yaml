@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8083
   shutdown: graceful
 
 spring:
@@ -10,9 +10,9 @@ spring:
 
 # Database
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/payments}
-    username: ${DB_USER:payments}
-    password: ${DB_PASSWORD:secret}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/payment_db}
+    username: ${DB_USER:postgreSQL}
+    password: ${DB_PASSWORD:Emma007_}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -25,7 +25,7 @@ spring:
 # JPA
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -39,9 +39,13 @@ spring:
 
 # Flyway
   flyway:
+    url: jdbc:postgresql://localhost:5432/payment_db
+    user: postgreSQL
+    password: Emma007_
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    validate-on-migrate: false
 
 # GraphQL
   graphql:
@@ -124,4 +128,4 @@ logging:
       springframework:
         graphql: WARN
   pattern:
-    console: %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"

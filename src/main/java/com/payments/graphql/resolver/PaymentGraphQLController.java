@@ -1,6 +1,7 @@
 package com.payments.graphql.resolver;
 
 import com.payments.exception.Exceptions;
+import com.payments.model.dto.PaymentDTOs;
 import com.payments.model.dto.PaymentDTOs.*;
 import com.payments.model.entity.*;
 import com.payments.model.enums.CurrencyCode;
@@ -23,13 +24,13 @@ import java.util.UUID;
 
 /**
  * GraphQL Controller using Spring for GraphQL's annotation-based schema mapping.
- *
+
  * Annotations used:
- * - @QueryMapping     → maps to Query fields in schema
- * - @MutationMapping  → maps to Mutation fields in schema
- * - @SchemaMapping    → maps to type fields (nested resolvers)
- * - @Argument         → binds GraphQL arguments to method params
- * - @ContextValue     → extracts values from GraphQL context
+ * - @QueryMapping → maps to Query fields in schema
+ * - @MutationMapping → maps to Mutation fields in schema
+ * - @SchemaMapping → maps to type fields (nested resolvers)
+ * - @Argument → binds GraphQL arguments to method params
+ * - @ContextValue → extracts values from GraphQL context
  */
 @Controller
 @RequiredArgsConstructor
@@ -52,9 +53,10 @@ public class PaymentGraphQLController {
 
     @QueryMapping
     @PreAuthorize("isAuthenticated()")
-    public Account accountByEmail(@Argument String email) {
-        return accountService.findByEmail(email)
-                .orElseThrow(() -> Exceptions.notFound("Account", "email", email));
+    public Account accountByAccountNumber(@Argument String accountNumber) {
+        Long acctNumber = Long.parseLong(accountNumber);
+        return accountService.findByAccountNumber(acctNumber)
+                .orElseThrow(() -> Exceptions.notFound("Account", "account number", accountNumber));
     }
 
     @QueryMapping
@@ -83,7 +85,7 @@ public class PaymentGraphQLController {
     @QueryMapping
     @PreAuthorize("isAuthenticated()")
     public Map<String, Object> payments(
-            @Argument PaymentFilterInput filter,
+            @Argument PaymentFilterDTO filter,
             @Argument PaymentSortInput sort,
             @Argument int page,
             @Argument int size) {
@@ -128,7 +130,7 @@ public class PaymentGraphQLController {
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
-    public Account createAccount(@Argument @Valid CreateAccountInput input) {
+    public Account createAccount(@Argument @Valid PaymentDTOs.CreateAccountDTO input) {
         return accountService.createAccount(input);
     }
 
@@ -148,13 +150,13 @@ public class PaymentGraphQLController {
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
-    public PaymentResult initiatePayment(@Argument @Valid InitiatePaymentInput input) {
+    public PaymentResult initiatePayment(@Argument @Valid PaymentDTOs.InitiatePaymentDTO input) {
         try {
             Payment payment = paymentService.initiatePayment(input);
             return PaymentResult.success(payment);
         } catch (IdempotencyReturnException e) {
             // Idempotent replay — return existing payment as success
-            return PaymentResult.success(e.getPayment());
+            return PaymentResult.success(e.getMessage());
         } catch (Exception e) {
             log.warn("Payment initiation failed: {}", e.getMessage());
             return PaymentResult.failure(e.getMessage());
@@ -185,7 +187,7 @@ public class PaymentGraphQLController {
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
-    public RefundResult refundPayment(@Argument @Valid RefundPaymentInput input) {
+    public RefundResult refundPayment(@Argument @Valid PaymentDTOs.RefundPaymentDTO input) {
         try {
             Refund refund = paymentService.refundPayment(input);
             return RefundResult.success(refund);
@@ -197,7 +199,7 @@ public class PaymentGraphQLController {
     // ─── Nested Schema Mappings ───────────────────────────────────────────────
 
     /**
-     * @SchemaMapping resolves the `payments` field on the Account type.
+     * \@SchemaMapping resolves the `payments` field on the Account type.
      * typeName = "Account" matches the GraphQL type; field = "payments" matches the field name.
      */
     @SchemaMapping(typeName = "Account", field = "payments")
@@ -206,7 +208,7 @@ public class PaymentGraphQLController {
             @Argument int page,
             @Argument int size) {
         Page<Payment> result = paymentService.findAll(
-                new PaymentFilterInput(null, null, null, null, null, null, null,
+                new PaymentFilterDTO(null, null, null, null, null, null, null,
                         account.getId(), null),
                 new PaymentSortInput("createdAt", "DESC"),
                 PageRequest.of(page, size));

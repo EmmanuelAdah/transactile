@@ -1,8 +1,9 @@
 package com.payments.service.impl;
 
 import com.payments.exception.Exceptions;
-import com.payments.model.dto.PaymentDTOs.CreateAccountInput;
+import com.payments.model.dto.PaymentDTOs.CreateAccountDTO;
 import com.payments.model.entity.Account;
+import com.payments.model.entity.User;
 import com.payments.model.enums.AccountStatus;
 import com.payments.repository.AccountRepository;
 import com.payments.service.AccountService;
@@ -29,25 +30,33 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public Account createAccount(CreateAccountInput input) {
-        if (accountRepository.existsByEmail(input.email())) {
-            throw Exceptions.duplicate("An account with email " + input.email() + " already exists");
-        }
-        if (accountRepository.existsByExternalId(input.externalId())) {
-            throw Exceptions.duplicate("An account with externalId " + input.externalId() + " already exists");
-        }
+    public Account createAccount(CreateAccountDTO input) {
+
+//        if (accountRepository.existsByUserIdAndAccountType(user.getId(), type)) {
+//            throw new IllegalStateException("Account type already exists for user");
+//        }
+//
+//        if (accountRepository.findByUserId(user.getId()).size() >= 2) {
+//            throw new IllegalStateException("User already has maximum allowed accounts");
+//        }
+//
+//        Account account = Account.builder()
+//                .user(user)
+//                .accountType(type)
+//                .email(user.getEmail())
+//                .fullName(user.getFullName())
+//                .currency(CurrencyCode.USD)
+//                .build();
 
         Account account = Account.builder()
-                .email(input.email())
-                .fullName(input.fullName())
                 .currency(input.currency())
-                .userId(input.externalId())
+                .user(new User())
                 .status(AccountStatus.ACTIVE)
                 .build();
 
         account = accountRepository.save(account);
         auditService.log("ACCOUNT_CREATED", "Account", account.getId(), account.getId(), null);
-        log.info("Account created: id={}, email={}", account.getId(), account.getEmail());
+        log.info("Account created: id={}, account number: {}", account.getId(), account.getAccountNumber());
         return account;
     }
 
@@ -60,8 +69,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Account> findByEmail(String email) {
-        return accountRepository.findByEmail(email);
+    public Optional<Account> findByAccountNumber(Long accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber);
     }
 
     @Override

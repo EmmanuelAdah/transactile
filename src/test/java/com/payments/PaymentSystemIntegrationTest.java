@@ -34,11 +34,11 @@ class PaymentSystemIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        alice = accountService.createAccount(new CreateAccountInput(
+        alice = accountService.createAccount(new CreateAccountDTO(
                 "alice+" + UUID.randomUUID() + "@test.com",
                 "Alice Integration", CurrencyCode.USD, "EXT-INT-A-" + UUID.randomUUID()
         ));
-        bob = accountService.createAccount(new CreateAccountInput(
+        bob = accountService.createAccount(new CreateAccountDTO(
                 "bob+" + UUID.randomUUID() + "@test.com",
                 "Bob Integration", CurrencyCode.USD, "EXT-INT-B-" + UUID.randomUUID()
         ));
@@ -55,7 +55,7 @@ class PaymentSystemIntegrationTest {
         String idempotencyKey = "integ-" + UUID.randomUUID();
 
         // ── 1. Initiate ───────────────────────────────────────────────────────
-        var initiateInput = new InitiatePaymentInput(
+        var initiateInput = new InitiatePaymentDTO(
                 alice.getId(), bob.getId(),
                 new BigDecimal("500.00"), CurrencyCode.USD,
                 PaymentMethod.CREDIT_CARD, "Integration test payment", null,
@@ -87,7 +87,7 @@ class PaymentSystemIntegrationTest {
                 .isEqualByComparingTo(confirmed.getNetAmount()); // net after fees
 
         // ── 3. Refund ─────────────────────────────────────────────────────────
-        var refundInput = new RefundPaymentInput(
+        var refundInput = new RefundPaymentDTO(
                 payment.getId(),
                 new BigDecimal("200.00"),
                 "Partial refund requested",
@@ -111,7 +111,7 @@ class PaymentSystemIntegrationTest {
     @DisplayName("idempotency: duplicate initiation returns same payment")
     void idempotentPaymentInitiation() {
         String idempotencyKey = "idem-integ-" + UUID.randomUUID();
-        var input = new InitiatePaymentInput(
+        var input = new InitiatePaymentDTO(
                 alice.getId(), bob.getId(),
                 new BigDecimal("100.00"), CurrencyCode.USD,
                 PaymentMethod.BANK_TRANSFER, "Idempotent test", null,
@@ -135,7 +135,7 @@ class PaymentSystemIntegrationTest {
         alice = accountRepository.findById(alice.getId()).orElseThrow();
         BigDecimal balanceBefore = alice.getAvailableBalance();
 
-        var payment = paymentService.initiatePayment(new InitiatePaymentInput(
+        var payment = paymentService.initiatePayment(new InitiatePaymentDTO(
                 alice.getId(), bob.getId(),
                 new BigDecimal("300.00"), CurrencyCode.USD,
                 PaymentMethod.CREDIT_CARD, null, null,
@@ -152,12 +152,12 @@ class PaymentSystemIntegrationTest {
     @DisplayName("account creation: duplicate email is rejected")
     void duplicateEmailRejected() {
         String uniqueEmail = "dup-test-" + UUID.randomUUID() + "@test.com";
-        accountService.createAccount(new CreateAccountInput(
+        accountService.createAccount(new CreateAccountDTO(
                 uniqueEmail, "First User", CurrencyCode.USD, "EXT-DUP-1-" + UUID.randomUUID()
         ));
 
         assertThatThrownBy(() -> accountService.createAccount(
-                new CreateAccountInput(uniqueEmail, "Second User", CurrencyCode.USD, "EXT-DUP-2-" + UUID.randomUUID())
+                new CreateAccountDTO(uniqueEmail, "Second User", CurrencyCode.USD, "EXT-DUP-2-" + UUID.randomUUID())
         )).hasMessageContaining("already exists");
     }
 }

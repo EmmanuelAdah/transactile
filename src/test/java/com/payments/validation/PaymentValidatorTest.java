@@ -1,6 +1,6 @@
 package com.payments.validation;
 
-import com.payments.model.dto.PaymentDTOs.InitiatePaymentInput;
+import com.payments.model.dto.PaymentDTOs.InitiatePaymentDTO;
 import com.payments.model.entity.Account;
 import com.payments.model.enums.*;
 import org.junit.jupiter.api.*;
@@ -39,9 +39,9 @@ class PaymentValidatorTest {
                 .build();
     }
 
-    private InitiatePaymentInput input(UUID senderId, UUID recipientId,
-                                       BigDecimal amount, CurrencyCode currency) {
-        return new InitiatePaymentInput(senderId, recipientId, amount, currency,
+    private InitiatePaymentDTO input(UUID senderId, UUID recipientId,
+                                     BigDecimal amount, CurrencyCode currency) {
+        return new InitiatePaymentDTO(senderId, recipientId, amount, currency,
                 PaymentMethod.CREDIT_CARD, null, null, UUID.randomUUID().toString());
     }
 

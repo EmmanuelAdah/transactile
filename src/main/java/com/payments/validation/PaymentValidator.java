@@ -1,7 +1,7 @@
 package com.payments.validation;
 
 import com.payments.exception.Exceptions;
-import com.payments.model.dto.PaymentDTOs.InitiatePaymentInput;
+import com.payments.model.dto.PaymentDTOs.InitiatePaymentDTO;
 import com.payments.model.entity.Account;
 import com.payments.model.enums.AccountStatus;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class PaymentValidator {
     @Value("${app.payment.max-transaction-amount:50000}")
     private BigDecimal maxTransactionAmount;
 
-    public void validatePayment(Account sender, Account recipient, InitiatePaymentInput input) {
+    public void validatePayment(Account sender, Account recipient, InitiatePaymentDTO input) {
         // Sender must be active
         if (sender.getStatus() != AccountStatus.ACTIVE) {
             throw Exceptions.accountSuspended(sender.getId());

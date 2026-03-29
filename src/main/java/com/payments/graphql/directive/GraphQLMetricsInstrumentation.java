@@ -1,11 +1,14 @@
 package com.payments.graphql.directive;
 
-import graphql.GraphQLError;
 import graphql.execution.instrumentation.InstrumentationContext;
 import graphql.execution.instrumentation.InstrumentationState;
 import graphql.execution.instrumentation.SimplePerformantInstrumentation;
 import graphql.execution.instrumentation.parameters.InstrumentationExecutionParameters;
 import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchParameters;
+import graphql.execution.instrumentation.parameters.InstrumentationValidationParameters;
+import graphql.language.Document;
+import graphql.language.OperationDefinition;
+import graphql.validation.ValidationError;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +32,20 @@ public class GraphQLMetricsInstrumentation extends SimplePerformantInstrumentati
     private final MeterRegistry meterRegistry;
 
     @Override
-    public InstrumentationContext<List<GraphQLError>> beginValidation(
-            InstrumentationExecutionParameters parameters,
+    public InstrumentationContext<List<ValidationError>> beginValidation(
+            InstrumentationValidationParameters parameters,
             InstrumentationState state) {
 
-        String operationName = parameters.getOperation();
-        log.debug("GraphQL operation: {}", operationName != null ? operationName : "anonymous");
+        Document document = parameters.getDocument();
+
+        OperationDefinition operation = document.getDefinitions().stream()
+                .filter(def -> def instanceof OperationDefinition)
+                .map(def -> (OperationDefinition) def)
+                .findFirst()
+                .orElse(null);
+
+        log.debug("GraphQL operation: {}", operation != null ? operation.getName() : "unknown");
+
         return super.beginValidation(parameters, state);
     }
 
@@ -47,8 +58,11 @@ public class GraphQLMetricsInstrumentation extends SimplePerformantInstrumentati
         Timer.Sample sample = Timer.start(meterRegistry);
 
         return new InstrumentationContext<>() {
+
             @Override
-            public void onDispatched() {}
+            public void onDispatched(CompletableFuture<Object> result) {
+
+            }
 
             @Override
             public void onCompleted(Object result, Throwable t) {

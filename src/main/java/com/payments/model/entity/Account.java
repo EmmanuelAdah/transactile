@@ -1,13 +1,14 @@
 package com.payments.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.payments.model.enums.AccountStatus;
+import com.payments.model.enums.AccountType;
 import com.payments.model.enums.CurrencyCode;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -15,11 +16,19 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "accounts", indexes = {
-        @Index(name = "idx_accounts_email", columnList = "email", unique = true),
-        @Index(name = "idx_accounts_external_id", columnList = "external_id", unique = true),
-        @Index(name = "idx_accounts_status", columnList = "status")
-})
+@Table(name = "accounts",
+        indexes = {
+            @Index(name = "idx_accounts_id", columnList = "id", unique = true),
+            @Index(name = "idx_accounts_account_number", columnList = "account_number", unique = true),
+            @Index(name = "idx_accounts_status", columnList = "status")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_account_type",
+                        columnNames = {"user_id", "account_type"}
+                )
+        }
+)
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
@@ -32,17 +41,21 @@ public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @EqualsAndHashCode.Include
     private UUID id;
 
-    @Column(name = "external_id", nullable = false, unique = true, length = 100)
-    private String userId;
+    @Column(
+            name = "account_number",
+            nullable = false,
+            unique = true,
+            updatable = false,
+            insertable = false
+    )
+    private Long accountNumber;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String email;
-
-    @Column(name = "full_name", nullable = false, length = 255)
-    private String fullName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
+    private User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -52,6 +65,10 @@ public class Account {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private CurrencyCode currency;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_type", nullable = false, length = 20)
+    private AccountType accountType;
 
     @Column(nullable = false, precision = 19, scale = 4)
     @Builder.Default

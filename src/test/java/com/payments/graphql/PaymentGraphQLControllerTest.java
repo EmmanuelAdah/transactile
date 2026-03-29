@@ -229,7 +229,7 @@ class PaymentGraphQLControllerTest {
     @Test
     @DisplayName("should create account via mutation")
     void shouldCreateAccount() {
-        when(accountService.createAccount(any(CreateAccountInput.class)))
+        when(accountService.createAccount(any(CreateAccountDTO.class)))
                 .thenReturn(testAccount);
 
         graphQlTester.document("""
@@ -256,7 +256,7 @@ class PaymentGraphQLControllerTest {
     @Test
     @DisplayName("should initiate payment mutation and return success result")
     void shouldInitiatePaymentMutation() {
-        when(paymentService.initiatePayment(any(InitiatePaymentInput.class)))
+        when(paymentService.initiatePayment(any(InitiatePaymentDTO.class)))
                 .thenReturn(testPayment);
 
         graphQlTester.document("""
