@@ -10,9 +10,9 @@ spring:
 
 # Database
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/payment_db}
-    username: ${DB_USER:postgreSQL}
-    password: ${DB_PASSWORD:Emma007_}
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -39,9 +39,9 @@ spring:
 
 # Flyway
   flyway:
-    url: jdbc:postgresql://localhost:5432/payment_db
-    user: postgreSQL
-    password: Emma007_
+    url: ${DB_URL}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
@@ -50,7 +50,7 @@ spring:
 # GraphQL
   graphql:
     graphiql:
-      enabled: ${GRAPHIQL_ENABLED:false}
+      enabled: ${GRAPHIQL_ENABLED}
       path: /graphiql
     path: /graphql
     websocket:
@@ -59,8 +59,8 @@ spring:
       printer:
         enabled: false
     cors:
-      allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
-      allowed-methods: GET,POST
+      allowed-origins: ${CORS_ORIGINS}
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS,HEAD
       allow-credentials: true
 
 # Cache
@@ -72,9 +72,9 @@ spring:
 # Security / JWT
 app:
   jwt:
-    secret: ${JWT_SECRET:change-me-in-production-must-be-256-bits-minimum}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
-    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
 
 # Payment Processing
   payment:
