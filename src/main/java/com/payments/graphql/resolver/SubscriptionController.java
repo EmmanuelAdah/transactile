@@ -8,9 +8,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.stereotype.Controller;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,7 +61,7 @@ public class SubscriptionController {
     }
 
     public void publishAccountBalanceUpdate(Account account) {
-        Sinks.Many<Account> sink = accountSinks.get(account.getId());
+        Sinks.Many<Account> sink = accountSinks.get(account.getAccountNumber());
         if (sink != null) {
             sink.tryEmitNext(account);
         }

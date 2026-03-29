@@ -3,6 +3,7 @@ package com.payments.service.impl;
 import com.payments.exception.Exceptions;
 import com.payments.model.dto.PaymentDTOs.CreateAccountInput;
 import com.payments.model.entity.Account;
+import com.payments.model.entity.User;
 import com.payments.model.enums.AccountStatus;
 import com.payments.repository.AccountRepository;
 import com.payments.service.AccountService;
@@ -33,21 +34,35 @@ public class AccountServiceImpl implements AccountService {
         if (accountRepository.existsByEmail(input.email())) {
             throw Exceptions.duplicate("An account with email " + input.email() + " already exists");
         }
-        if (accountRepository.existsByExternalId(input.externalId())) {
-            throw Exceptions.duplicate("An account with externalId " + input.externalId() + " already exists");
+        if (accountRepository.existsByUserId(input.userId())) {
+            throw Exceptions.duplicate("An account with userId " + input.userId() + " already exists");
         }
 
+//        if (accountRepository.existsByUserIdAndAccountType(user.getId(), type)) {
+//            throw new IllegalStateException("Account type already exists for user");
+//        }
+//
+//        if (accountRepository.findByUserId(user.getId()).size() >= 2) {
+//            throw new IllegalStateException("User already has maximum allowed accounts");
+//        }
+//
+//        Account account = Account.builder()
+//                .user(user)
+//                .accountType(type)
+//                .email(user.getEmail())
+//                .fullName(user.getFullName())
+//                .currency(CurrencyCode.USD)
+//                .build();
+
         Account account = Account.builder()
-                .email(input.email())
-                .fullName(input.fullName())
                 .currency(input.currency())
-                .userId(input.externalId())
+                .user(new User())
                 .status(AccountStatus.ACTIVE)
                 .build();
 
         account = accountRepository.save(account);
-        auditService.log("ACCOUNT_CREATED", "Account", account.getId(), account.getId(), null);
-        log.info("Account created: id={}, email={}", account.getId(), account.getEmail());
+        auditService.log("ACCOUNT_CREATED", "Account", account.getAccountNumber(), account.getAccountNumber(), null);
+        log.info("Account created: id={}, account number: {}", account.getId(), account.getAccountNumber());
         return account;
     }
 

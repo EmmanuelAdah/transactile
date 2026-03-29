@@ -4,29 +4,69 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
--- ─── Accounts ─────────────────────────────────────────────────────────────────
-CREATE TABLE accounts (
-    id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    external_id      VARCHAR(100) NOT NULL UNIQUE,
-    email            VARCHAR(255) NOT NULL UNIQUE,
-    full_name        VARCHAR(255) NOT NULL,
-    status           VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE'
-                         CHECK (status IN ('ACTIVE','SUSPENDED','CLOSED','UNDER_REVIEW')),
-    currency         VARCHAR(10)  NOT NULL,
-    balance          NUMERIC(19,4) NOT NULL DEFAULT 0,
-    available_balance NUMERIC(19,4) NOT NULL DEFAULT 0,
-    kyc_verified     BOOLEAN NOT NULL DEFAULT FALSE,
-    version          BIGINT NOT NULL DEFAULT 0,
-    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT accounts_balance_non_negative CHECK (balance >= 0),
-    CONSTRAINT accounts_available_balance_non_negative CHECK (available_balance >= 0),
-    CONSTRAINT accounts_available_le_balance CHECK (available_balance <= balance)
+-- Users table
+CREATE TABLE users (
+       id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+       email            VARCHAR(255) NOT NULL UNIQUE,
+       password         VARCHAR(255) NOT NULL,
+       first_name       VARCHAR(255) NOT NULL,
+       last_name        VARCHAR(255) NOT NULL,
+       other_name       VARCHAR(255) NOT NULL,
+       enabled          BOOLEAN NOT NULL DEFAULT TRUE,
+       account_non_locked BOOLEAN NOT NULL DEFAULT TRUE,
+       account_non_expired BOOLEAN NOT NULL DEFAULT TRUE,
+       credentials_non_expired BOOLEAN NOT NULL DEFAULT TRUE,
+       created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+       updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_accounts_email ON accounts(email);
-CREATE INDEX idx_accounts_external_id ON accounts(external_id);
+-- Indexes
+CREATE INDEX idx_users_id ON users(id);
+CREATE INDEX idx_users_email ON users(email);
+
+-- User roles table (many roles per user)
+CREATE TABLE user_roles (
+                            user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                            role    VARCHAR(50) NOT NULL,
+                            PRIMARY KEY (user_id, role)
+);
+
+-- ─── Accounts ─────────────────────────────────────────────────────────────────
+
+-- Sequence for accountNumber
+CREATE SEQUENCE account_number_seq
+    START 1050360080
+    INCREMENT 1
+    MINVALUE 1050360080
+    MAXVALUE 1999999999
+    CACHE 1;
+
+-- Accounts table
+CREATE TABLE accounts (
+      id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id           UUID NOT NULL,
+      status            VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
+          CHECK (status IN ('ACTIVE','SUSPENDED','CLOSED','UNDER_REVIEW')),
+      account_number    BIGINT NOT NULL DEFAULT nextval('account_number_seq'),
+      currency          VARCHAR(10) NOT NULL,
+      account_type      VARCHAR(20) NOT NULL,
+      balance           NUMERIC(19,4) NOT NULL DEFAULT 0,
+      available_balance NUMERIC(19,4) NOT NULL DEFAULT 0,
+      kyc_verified      BOOLEAN NOT NULL DEFAULT FALSE,
+      version           BIGINT NOT NULL DEFAULT 0,
+      created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Constraints
+      CONSTRAINT accounts_balance_non_negative CHECK (balance >= 0),
+      CONSTRAINT accounts_available_balance_non_negative CHECK (available_balance >= 0),
+      CONSTRAINT accounts_available_le_balance CHECK (available_balance <= balance),
+      CONSTRAINT uk_user_account_type UNIQUE(user_id, account_type)
+);
+
+-- Indexes
+CREATE INDEX idx_accounts_user_id ON accounts(user_id);
+CREATE INDEX idx_accounts_accountNumber ON accounts(account_number);
 CREATE INDEX idx_accounts_status ON accounts(status);
 
 -- ─── Payments ─────────────────────────────────────────────────────────────────

@@ -21,9 +21,10 @@ public final class PaymentDTOs {
 
     public record CreateAccountInput(
             @NotBlank @Email String email,
-            @NotBlank @Size(min = 2, max = 255) String fullName,
+            @NotBlank @Size(min = 2, max = 255) String firstName,
+            @NotBlank @Size(min = 2, max = 255) String lastName,
             @NotNull CurrencyCode currency,
-            @NotBlank @Size(max = 100) String externalId
+            @NotBlank @Size(max = 100) String userId
     ) {}
 
     public record InitiatePaymentInput(

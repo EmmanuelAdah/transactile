@@ -11,21 +11,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface AccountRepository extends JpaRepository<Account, UUID>, JpaSpecificationExecutor<Account> {
-
-    Optional<Account> findByEmail(String email);
-
-    Optional<Account> findByExternalId(String externalId);
-
-    boolean existsByEmail(String email);
-
-    boolean existsByExternalId(String externalId);
+public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpecificationExecutor<Account> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT a FROM Account a WHERE a.id = :id")
+    @Query("SELECT a FROM Account a WHERE a.accountNumber = :id")
     Optional<Account> findByIdForUpdate(@Param("id") UUID id);
 
     @Modifying
-    @Query("UPDATE Account a SET a.status = :status WHERE a.id = :id")
+    @Query("UPDATE Account a SET a.status = :status WHERE a.accountNumber = :id")
     int updateStatus(@Param("id") UUID id, @Param("status") AccountStatus status);
 }

@@ -1,6 +1,6 @@
 package com.payments.security;
 
-import com.payments.repository.AccountRepository;
+import com.payments.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -14,21 +14,20 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AccountUserDetailsService implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Account not found: " + email));
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         return User.builder()
-                .username(account.getEmail())
+                .username(user.getEmail())
                 .password("") // JWT-based auth — no password stored here
                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
-                .accountLocked(!account.isActive())
                 .build();
     }
 }
