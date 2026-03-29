@@ -74,8 +74,6 @@ type User {
 
 type Account {
     id: UUID!
-
-    # Relationship (flattened for performance)
     userId: UUID!
 
     status: AccountStatus!
@@ -144,17 +142,18 @@ type Refund {
     processedAt: DateTime
 }
 
-type PaymentMethod {
-    id: UUID!
-    type: PaymentMethod!
-    last4: String
-    brand: String
-    expiryMonth: Int
-    expiryYear: Int
-    isDefault: Boolean!
-    account: Account!
-    createdAt: DateTime!
-}
+#type PaymentMethod {
+#    id: UUID!
+#    name: String!
+#    type: PaymentMethod!
+#    last4: String
+#    brand: String
+#    expiryMonth: Int
+#    expiryYear: Int
+#    isDefault: Boolean!
+#    account: Account!
+#    createdAt: DateTime!
+#}
 
 # ─── Audit & Analytics ────────────────────────────────────────────────────────
 type AuditLog {
@@ -274,7 +273,7 @@ input PaymentSortInput {
 type Query {
     # Account queries
     account(id: UUID!): Account
-    accountByEmail(email: String!): Account
+    accountByAccountNumber(accountNumber: ID!): Account
     accounts(page: Int = 0, size: Int = 20): AccountPage!
 
     # Payment queries

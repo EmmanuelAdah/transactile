@@ -18,9 +18,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "accounts",
         indexes = {
-            @Index(name = "idx_accounts_user_id", columnList = "user_id", unique = true),
             @Index(name = "idx_accounts_id", columnList = "id", unique = true),
-            @Index(name = "idx_accounts_accountNumber", columnList = "accountNumber", unique = true),
+            @Index(name = "idx_accounts_account_number", columnList = "account_number", unique = true),
             @Index(name = "idx_accounts_status", columnList = "status")
         },
         uniqueConstraints = {
@@ -44,7 +43,13 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "account_number", nullable = false, unique = true, updatable = false)
+    @Column(
+            name = "account_number",
+            nullable = false,
+            unique = true,
+            updatable = false,
+            insertable = false
+    )
     private Long accountNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)

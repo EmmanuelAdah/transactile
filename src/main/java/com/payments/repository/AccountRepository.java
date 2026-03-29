@@ -20,4 +20,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     @Modifying
     @Query("UPDATE Account a SET a.status = :status WHERE a.accountNumber = :id")
     int updateStatus(@Param("id") UUID id, @Param("status") AccountStatus status);
+
+    Optional<Account> findByAccountNumber(Long accountNumber);
+
+    Optional<Account> findById(UUID id);
 }

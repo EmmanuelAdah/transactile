@@ -1,6 +1,6 @@
 package com.payments.service;
 
-import com.payments.model.dto.PaymentDTOs.CreateAccountInput;
+import com.payments.model.dto.PaymentDTOs.CreateAccountDTO;
 import com.payments.model.entity.Account;
 import com.payments.model.enums.AccountStatus;
 import com.payments.model.enums.CurrencyCode;
@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +33,7 @@ class AccountServiceTest {
     @Test
     @DisplayName("should create account when email and externalId are unique")
     void shouldCreateAccount() {
-        var input = new CreateAccountInput("new@example.com", "New User", CurrencyCode.USD, "EXT-NEW");
+        var input = new CreateAccountDTO("new@example.com", "New User", CurrencyCode.USD, "EXT-NEW");
         Account saved = Account.builder()
                 .id(UUID.randomUUID())
                 .email(input.email())
@@ -58,7 +57,7 @@ class AccountServiceTest {
     @Test
     @DisplayName("should throw when email already exists")
     void shouldThrowOnDuplicateEmail() {
-        var input = new CreateAccountInput("dup@example.com", "Dup User", CurrencyCode.USD, "EXT-DUP");
+        var input = new CreateAccountDTO("dup@example.com", "Dup User", CurrencyCode.USD, "EXT-DUP");
         when(accountRepository.existsByEmail("dup@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> accountService.createAccount(input))
@@ -68,7 +67,7 @@ class AccountServiceTest {
     @Test
     @DisplayName("should throw when externalId already exists")
     void shouldThrowOnDuplicateExternalId() {
-        var input = new CreateAccountInput("unique@example.com", "Unique", CurrencyCode.USD, "EXT-TAKEN");
+        var input = new CreateAccountDTO("unique@example.com", "Unique", CurrencyCode.USD, "EXT-TAKEN");
         when(accountRepository.existsByEmail(any())).thenReturn(false);
         when(accountRepository.existsByExternalId("EXT-TAKEN")).thenReturn(true);
 

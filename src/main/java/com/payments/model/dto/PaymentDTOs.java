@@ -19,7 +19,7 @@ public final class PaymentDTOs {
 
     // ─── Inputs ─────────────────────────────────────────────────────────────
 
-    public record CreateAccountInput(
+    public record CreateAccountDTO(
             @NotBlank @Email String email,
             @NotBlank @Size(min = 2, max = 255) String firstName,
             @NotBlank @Size(min = 2, max = 255) String lastName,
@@ -27,7 +27,7 @@ public final class PaymentDTOs {
             @NotBlank @Size(max = 100) String userId
     ) {}
 
-    public record InitiatePaymentInput(
+    public record InitiatePaymentDTO(
             @NotNull UUID senderId,
             @NotNull UUID recipientId,
             @NotNull @DecimalMin("0.01") @DecimalMax("50000.00") BigDecimal amount,
@@ -38,21 +38,21 @@ public final class PaymentDTOs {
             @NotBlank @Size(max = 128) String idempotencyKey
     ) {}
 
-    public record RefundPaymentInput(
+    public record RefundPaymentDTO(
             @NotNull UUID paymentId,
             @NotNull @DecimalMin("0.01") BigDecimal amount,
             @NotBlank @Size(max = 500) String reason,
             @NotBlank @Size(max = 128) String idempotencyKey
     ) {}
 
-    public record AddPaymentMethodInput(
+    public record AddPaymentMethodDTO(
             @NotNull UUID accountId,
             @NotNull PaymentMethod type,
             @NotBlank String token,
             boolean isDefault
     ) {}
 
-    public record PaymentFilterInput(
+    public record PaymentFilterDTO(
             PaymentStatus status,
             PaymentMethod method,
             CurrencyCode currency,

@@ -52,7 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @CircuitBreaker(name = "paymentProcessor", fallbackMethod = "paymentFallback")
     @Retry(name = "paymentProcessor")
-    public Payment initiatePayment(InitiatePaymentInput input) {
+    public Payment initiatePayment(InitiatePaymentDTO input) {
         log.info("Initiating payment: idempotencyKey={}, amount={} {}",
                 input.idempotencyKey(), input.amount(), input.currency());
 
@@ -190,7 +190,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Refund refundPayment(RefundPaymentInput input) {
+    public Refund refundPayment(RefundPaymentDTO input) {
         log.info("Processing refund for payment: {}, amount: {}", input.paymentId(), input.amount());
 
         // Idempotency check
@@ -272,7 +272,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Payment> findAll(PaymentFilterInput filter, PaymentSortInput sort, Pageable pageable) {
+    public Page<Payment> findAll(PaymentFilterDTO filter, PaymentSortInput sort, Pageable pageable) {
         Specification<Payment> spec = buildSpecification(filter);
         Sort sortOrder = Sort.by(
                 "ASC".equalsIgnoreCase(sort.direction()) ? Sort.Direction.ASC : Sort.Direction.DESC,
@@ -329,7 +329,7 @@ public class PaymentServiceImpl implements PaymentService {
         transactionRepository.save(tx);
     }
 
-    private Specification<Payment> buildSpecification(PaymentFilterInput filter) {
+    private Specification<Payment> buildSpecification(PaymentFilterDTO filter) {
         if (filter == null) return Specification.where(null);
 
         return (root, query, cb) -> {
@@ -376,7 +376,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // Fallback for circuit breaker
-    private Payment paymentFallback(InitiatePaymentInput input, Throwable t) {
+    private Payment paymentFallback(InitiatePaymentDTO input, Throwable t) {
         log.error("Circuit breaker triggered for payment initiation: {}", t.getMessage());
         throw Exceptions.invalidState("Payment processing is temporarily unavailable. Please try again later.");
     }

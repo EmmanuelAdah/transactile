@@ -12,19 +12,19 @@ import java.util.UUID;
 
 public interface PaymentService {
 
-    Payment initiatePayment(InitiatePaymentInput input);
+    Payment initiatePayment(InitiatePaymentDTO input);
 
     Payment confirmPayment(UUID paymentId);
 
     Payment cancelPayment(UUID paymentId, String reason);
 
-    Refund refundPayment(RefundPaymentInput input);
+    Refund refundPayment(RefundPaymentDTO input);
 
     Optional<Payment> findById(UUID id);
 
     Optional<Payment> findByReferenceId(String referenceId);
 
-    Page<Payment> findAll(PaymentFilterInput filter, PaymentSortInput sort, Pageable pageable);
+    Page<Payment> findAll(PaymentFilterDTO filter, PaymentSortInput sort, Pageable pageable);
 
     PaymentStats getStats(UUID accountId, CurrencyCode currency, String period);
 }
