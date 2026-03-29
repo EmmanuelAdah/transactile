@@ -26,24 +26,25 @@ CREATE INDEX idx_users_email ON users(email);
 
 -- User roles table (many roles per user)
 CREATE TABLE user_roles (
-                            user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                            role    VARCHAR(50) NOT NULL,
-                            PRIMARY KEY (user_id, role)
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role    VARCHAR(50) NOT NULL,
+    PRIMARY KEY (user_id, role)
 );
 
 -- ─── Accounts ─────────────────────────────────────────────────────────────────
 
 -- Sequence for accountNumber
 CREATE SEQUENCE account_number_seq
-    START 1050360080
-    INCREMENT 1
-    MINVALUE 1050360080
-    MAXVALUE 1999999999
+    START WITH 2010715261
+    INCREMENT BY 1
+    NO CYCLE
     CACHE 1;
+
+ALTER SEQUENCE account_number_seq RESTART WITH 2617715261;
 
 -- Accounts table
 CREATE TABLE accounts (
-      id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      id                UUID PRIMARY KEY,
       user_id           UUID NOT NULL,
       status            VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
           CHECK (status IN ('ACTIVE','SUSPENDED','CLOSED','UNDER_REVIEW')),
